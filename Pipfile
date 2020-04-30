@@ -9,7 +9,7 @@ pytest = "*"
 [packages]
 numpy = "*"
 pandas = "*"
-backtrader = "*"
+backtrader = {extras = ["plotting"],version = "*"}
 scipy = "*"
 torch = "*"
 
