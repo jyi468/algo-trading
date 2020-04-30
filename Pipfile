@@ -12,6 +12,7 @@ pandas = "*"
 backtrader = {extras = ["plotting"],version = "*"}
 scipy = "*"
 torch = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"
