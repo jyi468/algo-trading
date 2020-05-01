@@ -4,10 +4,14 @@ import datetime
 import os.path  # Manage paths
 import sys  # Find out the script name (in argv[0
 import backtrader as bt
+from TestStrategy import TestStrategy
 
 if __name__ == '__main__':
     cerebro = bt.Cerebro()
     # Cerebro engine created broker instance in background
+
+    # Add strategy
+    cerebro.addstrategy(TestStrategy)
 
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
