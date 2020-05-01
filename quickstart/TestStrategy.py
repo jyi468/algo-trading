@@ -13,5 +13,15 @@ class TestStrategy(bt.Strategy):
         self.dataclose = self.datas[0].close
 
     def next(self):
+        # This method called on each bar of the system clock (self.datas[0])
+        # True until things like indicators, which need some bars to start producing
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
+
+        if self.dataclose[0] < self.dataclose[-1]:
+            # current close less than previous close
+            if self.dataclose[-1] < self.dataclose[-2]:
+                # previous close less than previous close
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                # Basically if price has fell for 3 sessions, we buy
+                self.buy()
