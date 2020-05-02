@@ -18,7 +18,7 @@ if __name__ == '__main__':
     modpath = os.path.dirname(os.path.abspath(sys.argv[0]))
     datapath = os.path.join(modpath, 'datas/orcl-1995-2014.txt')
 
-    # Create a Data Feed
+    # Create a Data Feed - Composed of different lines
     data = bt.feeds.YahooFinanceCSVData(
         dataname=datapath,
         # Do not pass values before this date

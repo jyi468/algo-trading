@@ -9,7 +9,11 @@ class TestStrategy(bt.Strategy):
 
     def __init__(self):
         # When init is called, the strategy already has a list of datas present in the platform
-        # Keep a reference to the "close" line in the data[0] dataseries
+        # self.datas is a list of data feeds
+        # self.datas[0] is the default data feed for trading operations and
+        # keeping all strategy elements synched (system clock)
+        # self.datas[0] is a reference to the close line
+        # Keep a reference to the "close" line in the datas[0] dataseries
         self.dataclose = self.datas[0].close
 
     def next(self):
