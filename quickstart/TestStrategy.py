@@ -110,6 +110,6 @@ class TestStrategy(bt.Strategy):
                 self.order = self.sell()
 
     def stop(self):
-        '''Strategy hook. Called when data has been exhausted and backtesting over'''
+        """Strategy hook. Called when data has been exhausted and backtesting over"""
         self.log('(MA Period %2d) Ending Value %.2f' %
                  (self.params.maperiod, self.broker.getvalue()), doprint=True)
