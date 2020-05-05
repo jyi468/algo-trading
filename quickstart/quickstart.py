@@ -31,7 +31,7 @@ if __name__ == '__main__':
     cerebro.adddata(data)
 
     # Set cash
-    cerebro.broker.setcash(100000.0)
+    cerebro.broker.setcash(1000.0)
 
     # Add a FixedSize sizer according to the stake
     cerebro.addsizer(bt.sizers.FixedSize, stake=10)
