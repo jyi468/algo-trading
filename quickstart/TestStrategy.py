@@ -11,6 +11,10 @@ import backtrader as bt
 
 # Create a Stratey
 class TestStrategy(bt.Strategy):
+    # Class variables for params
+    params = (
+        ('exitbars', 5),
+    )
 
     def log(self, txt, dt=None):
         ''' Logging function fot this strategy'''
@@ -90,9 +94,10 @@ class TestStrategy(bt.Strategy):
         else:
 
             # Already in the market ... we might sell
-            if len(self) >= (self.bar_executed + 5):
+            if len(self) >= (self.bar_executed + self.params.exitbars):
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+

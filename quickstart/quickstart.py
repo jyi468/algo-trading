@@ -33,6 +33,9 @@ if __name__ == '__main__':
     # Set cash
     cerebro.broker.setcash(100000.0)
 
+    # Add a FixedSize sizer according to the stake
+    cerebro.addsizer(bt.sizers.FixedSize, stake=10)
+
     # Set commission to 0.1%. Divide by 100 to remove %
     cerebro.broker.setcommission(commission=0.001)
 
