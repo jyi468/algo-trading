@@ -14,12 +14,14 @@ class TestStrategy(bt.Strategy):
     # Class variables for params
     params = (
         ('maperiod', 15),
+        ('printlog', False),
     )
 
-    def log(self, txt, dt=None):
+    def log(self, txt, dt=None, doprint=False):
         ''' Logging function fot this strategy'''
-        dt = dt or self.datas[0].datetime.date(0)
-        print('%s, %s' % (dt.isoformat(), txt))
+        if self.params.printlog or doprint:
+            dt = dt or self.datas[0].datetime.date(0)
+            print('%s, %s' % (dt.isoformat(), txt))
 
     def __init__(self):
         # Keep a reference to the "close" line in the data[0] dataseries
@@ -32,13 +34,13 @@ class TestStrategy(bt.Strategy):
         self.sma = bt.indicators.MovingAverageSimple(self.datas[0], period=self.params.maperiod)
 
         # Indicators for the plotting show
-        bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
-        bt.indicators.WeightedMovingAverage(self.datas[0], period=25).subplot = True
-        bt.indicators.StochasticSlow(self.datas[0])
-        bt.indicators.MACDHisto(self.datas[0])
-        rsi = bt.indicators.RSI(self.datas[0])
-        bt.indicators.SmoothedMovingAverage(rsi, period=10)
-        bt.indicators.ATR(self.datas[0]).plot = False
+        # bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
+        # bt.indicators.WeightedMovingAverage(self.datas[0], period=25).subplot = True
+        # bt.indicators.StochasticSlow(self.datas[0])
+        # bt.indicators.MACDHisto(self.datas[0])
+        # rsi = bt.indicators.RSI(self.datas[0])
+        # bt.indicators.SmoothedMovingAverage(rsi, period=10)
+        # bt.indicators.ATR(self.datas[0]).plot = False
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -107,3 +109,7 @@ class TestStrategy(bt.Strategy):
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
 
+    def stop(self):
+        '''Strategy hook. Called when data has been exhausted and backtesting over'''
+        self.log('(MA Period %2d) Ending Value %.2f' %
+                 (self.params.maperiod, self.broker.getvalue()), doprint=True)

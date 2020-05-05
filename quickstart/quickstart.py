@@ -10,8 +10,11 @@ if __name__ == '__main__':
     cerebro = bt.Cerebro()
     # Cerebro engine created broker instance in background
 
-    # Add strategy
-    cerebro.addstrategy(TestStrategy)
+    # Add strategy - Optimize for different moving averages
+    cerebro.optstrategy(
+        TestStrategy,
+        maperiod=range(10, 31)
+    )
 
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
@@ -43,8 +46,8 @@ if __name__ == '__main__':
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     # run() loops over data
-    cerebro.run()
+    cerebro.run(maxcpus=1)
 
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
-    cerebro.plot()
+    # cerebro.plot()
