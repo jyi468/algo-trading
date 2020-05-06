@@ -13,6 +13,7 @@ backtrader = {extras = ["plotting"],version = "*"}
 scipy = "*"
 torch = "*"
 requests = "*"
+ibpy2 = {file = "https://github.com/blampe/IbPy/archive/master.zip"}
 
 [requires]
 python_version = "3.7"
