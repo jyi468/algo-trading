@@ -4,6 +4,7 @@ import datetime
 import os.path  # Manage paths
 import sys  # Find out the script name (in argv[0
 import backtrader as bt
+from feeds.OandaCSVData import OandaCSVData
 from trading.TradeStrategy import TradeStrategy
 
 if __name__ == '__main__':
@@ -32,6 +33,17 @@ if __name__ == '__main__':
 
     # Add Data Feed to Cerebro
     cerebro.adddata(data)
+
+    datalist = [
+        ('datas/CAD_CHF-2005-2017-D1.csv', 'CADCHF'),
+        ('datas/EUR_USD-2005-2017-D1.csv', 'EURUSD'),
+        ('datas/GBP_AUD-2005-2017-D1.csv', 'GBPAUD'),
+    ]
+
+    # Add multiple data feeds
+    for i in range(len(datalist)):
+        data = OandaCSVData(dataname=datalist[i][0])
+        cerebro.adddata(data, name=datalist[i][1])
 
     # Set cash
     cerebro.broker.setcash(1000.0)
