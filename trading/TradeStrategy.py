@@ -32,7 +32,8 @@ class TradeStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        self.sma = [bt.indicators.MovingAverageSimple(self.datas[0], period=self.params.maperiod)
+        # TODO: Use dict to store indicators
+        self.sma = [bt.indicators.MovingAverageSimple(self.datas[i], period=self.params.maperiod)
                     for i in range(len(self.datas))]
 
         # Indicators for the plotting show
@@ -94,7 +95,7 @@ class TradeStrategy(bt.Strategy):
             if not self.position:
 
                 # Not yet ... we MIGHT BUY if ...
-                if self.dataclose[i] > self.sma[i][0]:
+                if self.dataclose[i][0] > self.sma[i][0]:
 
                     # BUY, BUY, BUY!!! (with default parameters)
                     self.log('BUY CREATE, %.2f' % self.dataclose[i][0])
@@ -108,7 +109,7 @@ class TradeStrategy(bt.Strategy):
             else:
 
                 # Already in the market ... we might sell
-                if self.dataclose[i] < self.sma[i][0]:
+                if self.dataclose[i][0] < self.sma[i][0]:
                     # SELL, SELL, SELL!!! (with all possible default parameters)
                     self.log('SELL CREATE, %.2f' % self.dataclose[i][0])
 
