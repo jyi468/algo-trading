@@ -15,6 +15,7 @@ class TradeStrategy(bt.Strategy):
     params = (
         ('maperiod', 15),
         ('printlog', False),
+        ('use_target_percent', True)
     )
 
     def log(self, txt, dt=None, doprint=False):
@@ -98,6 +99,9 @@ class TradeStrategy(bt.Strategy):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.buy()
+
+                if self.params.use_target_percent:
+                    self.order = self.order_target_percent()
 
         else:
 
