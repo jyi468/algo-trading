@@ -15,7 +15,7 @@ class TradeStrategy(bt.Strategy):
     params = (
         ('maperiod', 15),
         ('printlog', False),
-        ('use_target_percent', True)
+        ('use_target_percent', False)
     )
 
     def log(self, txt, dt=None, doprint=False):
@@ -25,14 +25,15 @@ class TradeStrategy(bt.Strategy):
             print('%s, %s' % (dt.isoformat(), txt))
 
     def __init__(self):
-        # Keep a reference to the "close" line in the data[0] dataseries
-        self.dataclose = self.datas[0].close
+        # Keep a reference to the "close" lines
+        self.dataclose = [self.datas[i].close for i in range(len(self.datas))]
 
         # To keep track of pending orders and buy price/commission
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        self.sma = bt.indicators.MovingAverageSimple(self.datas[0], period=self.params.maperiod)
+        self.sma = [bt.indicators.MovingAverageSimple(self.datas[0], period=self.params.maperiod)
+                    for i in range(len(self.datas))]
 
         # Indicators for the plotting show
         # bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
@@ -81,37 +82,38 @@ class TradeStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
-        # Simply log the closing price of the series from the reference
-        self.log('Close, %.2f' % self.dataclose[0])
+        for i, data in enumerate(self.datas):
+            # Simply log the closing price of the series from the reference
+            self.log('Close, %.2f' % self.dataclose[i][0])
 
-        # Check if an order is pending ... if yes, we cannot send a 2nd one
-        if self.order:
-            return
+            # Check if an order is pending ... if yes, we cannot send a 2nd one
+            if self.order:
+                return
 
-        # Check if we are in the market
-        if not self.position:
+            # Check if we are in the market
+            if not self.position:
 
-            # Not yet ... we MIGHT BUY if ...
-            if self.dataclose[0] > self.sma[0]:
+                # Not yet ... we MIGHT BUY if ...
+                if self.dataclose[i] > self.sma[i][0]:
 
-                # BUY, BUY, BUY!!! (with default parameters)
-                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                    # BUY, BUY, BUY!!! (with default parameters)
+                    self.log('BUY CREATE, %.2f' % self.dataclose[i][0])
 
-                # Keep track of the created order to avoid a 2nd order
-                self.order = self.buy()
+                    # Keep track of the created order to avoid a 2nd order
+                    self.order = self.buy(data=data)
 
-                if self.params.use_target_percent:
-                    self.order = self.order_target_percent()
+                    if self.params.use_target_percent:
+                        self.order = self.order_target_percent()
 
-        else:
+            else:
 
-            # Already in the market ... we might sell
-            if self.dataclose[0] < self.sma[0]:
-                # SELL, SELL, SELL!!! (with all possible default parameters)
-                self.log('SELL CREATE, %.2f' % self.dataclose[0])
+                # Already in the market ... we might sell
+                if self.dataclose[i] < self.sma[i][0]:
+                    # SELL, SELL, SELL!!! (with all possible default parameters)
+                    self.log('SELL CREATE, %.2f' % self.dataclose[i][0])
 
-                # Keep track of the created order to avoid a 2nd order
-                self.order = self.sell()
+                    # Keep track of the created order to avoid a 2nd order
+                    self.order = self.sell(data=data)
 
     def stop(self):
         """Strategy hook. Called when data has been exhausted and backtesting over"""
