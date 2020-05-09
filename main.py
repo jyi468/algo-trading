@@ -12,10 +12,12 @@ if __name__ == '__main__':
     # Cerebro engine created broker instance in background
 
     # Add strategy - Optimize for different moving averages
-    cerebro.optstrategy(
-        TradeStrategy,
-        maperiod=range(10, 31)
-    )
+    # cerebro.optstrategy(
+    #     TradeStrategy,
+    #     maperiod=range(10, 31)
+    # )
+
+    cerebro.addstrategy(TradeStrategy)
 
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     cerebro.addsizer(bt.sizers.FixedSize, stake=10)
 
     # Set commission to 0.1%. Divide by 100 to remove %
-    cerebro.broker.setcommission(commission=0.001)
+    # cerebro.broker.setcommission(commission=0.001)
 
     # instance already has cash to start with
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
