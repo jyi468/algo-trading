@@ -1,8 +1,13 @@
 import pandas as pd
 
+
 class Optimizer:
-    def __init__(self):
-        pass
+    def __init__(self, model=None):
+        """
+        Initialize optimizer class.
+        :param model: Pass in predefined model
+        """
+        self.model = model
 
     def train(self, x, y):
         """
