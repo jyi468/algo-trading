@@ -14,6 +14,7 @@ scipy = "*"
 torch = "*"
 requests = "*"
 ibpy2 = {file = "https://github.com/blampe/IbPy/archive/master.zip"}
+tox = "*"
 
 [requires]
 python_version = "3.7"
