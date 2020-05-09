@@ -83,6 +83,7 @@ class TradeStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
+        # TODO: Refactor to conform to Optimizer API
         for i, data in enumerate(self.datas):
             # Simply log the closing price of the series from the reference
             self.log('Close, %.2f' % self.dataclose[i][0])
