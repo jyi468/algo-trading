@@ -105,6 +105,8 @@ class TradeStrategy(bt.Strategy):
                     self.order = self.buy(data=data)
 
                     if self.params.use_target_percent:
+                        # Data will be calculated indicator per period
+                        # optimizer.compute_portfolio(data)
                         self.order = self.order_target_percent()
 
             else:
