@@ -18,6 +18,10 @@ class Optimizer:
         """
         pass
 
+    def save(self, path):
+        """Save model to path"""
+        pass
+
     def compute_portfolio(self, x) -> pd.DataFrame:
         """
 
