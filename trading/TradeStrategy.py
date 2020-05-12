@@ -15,7 +15,9 @@ class TradeStrategy(bt.Strategy):
     params = (
         ('maperiod', 15),
         ('printlog', False),
-        ('use_target_percent', False)
+        ('use_target_percent', False),
+        ('should_train', True),
+        ('should_test', True)
     )
 
     def log(self, txt, dt=None, doprint=False):
@@ -32,7 +34,12 @@ class TradeStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        # TODO: Use dict to store indicators
+        # TODO: Change to better data structure for torch
+        self.indicators = {}
+        for i, data in enumerate(self.datas):
+            self.indicators[data] = {}
+            self.indicators[data]['sma'] = bt.indicators.MovingAverageSimple(data, period=self.params.maperiod)
+            self.indicators[data]['rsi'] = bt.indicators.RSI(data)
         self.sma = [bt.indicators.MovingAverageSimple(self.datas[i], period=self.params.maperiod)
                     for i in range(len(self.datas))]
 
@@ -96,7 +103,7 @@ class TradeStrategy(bt.Strategy):
             if not self.position:
 
                 # Not yet ... we MIGHT BUY if ...
-                if self.dataclose[i][0] > self.sma[i][0]:
+                if self.dataclose[i][0] > self.indicators[data]['sma'][0]:
 
                     # BUY, BUY, BUY!!! (with default parameters)
                     self.log('BUY CREATE, %.2f' % self.dataclose[i][0])
@@ -112,7 +119,7 @@ class TradeStrategy(bt.Strategy):
             else:
 
                 # Already in the market ... we might sell
-                if self.dataclose[i][0] < self.sma[i][0]:
+                if self.dataclose[i][0] < self.indicators[data]['sma'][0]:
                     # SELL, SELL, SELL!!! (with all possible default parameters)
                     self.log('SELL CREATE, %.2f' % self.dataclose[i][0])
 
