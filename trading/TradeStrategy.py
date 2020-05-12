@@ -34,7 +34,8 @@ class TradeStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        # TODO: Change to better data structure for torch
+        # TODO: Convert indicators to torch tensors - Can pass tensor value each iteration of learning
+        # https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
         self.indicators = {}
         for i, data in enumerate(self.datas):
             self.indicators[data] = {}
