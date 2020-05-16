@@ -44,7 +44,20 @@ class Net(nn.Module):
 
 
 net = Net()
-print(net)
-params = list(net.parameters())
-print(len(params))
-print(params[0].size())  # conv1's .weight
+# print(net)
+# params = list(net.parameters())
+# print(len(params))
+# print(params[0].size())  # conv1's .weight
+
+# random 32 x 32 input
+input = torch.randn(1, 1, 32, 32)
+out = net(input)
+print(out)
+
+# zero gradient buffers of all parameters and backprops with random gradients
+# Why: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch
+# Need to zero gradients before starting to do backpropagation because torch accumulates the gradients on subsequent
+# Backward passes
+# Ideally, on every training loop, you should zero out gradients so that you do paramter update correctly
+net.zero_grad()
+out.backward(torch.randn(1, 10))
