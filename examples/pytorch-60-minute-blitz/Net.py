@@ -45,3 +45,6 @@ class Net(nn.Module):
 
 net = Net()
 print(net)
+params = list(net.parameters())
+print(len(params))
+print(params[0].size())  # conv1's .weight
