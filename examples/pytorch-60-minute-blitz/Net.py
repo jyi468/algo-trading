@@ -57,6 +57,7 @@ print(out)
 # zero gradient buffers of all parameters and backprops with random gradients
 # Why: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch
 # Need to zero gradients before starting to do backpropagation because torch accumulates the gradients on subsequent
+# This is torch's default behavior as it is convenient for RNNs
 # Backward passes
 # Ideally, on every training loop, you should zero out gradients so that you do paramter update correctly
 net.zero_grad()
