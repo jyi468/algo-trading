@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
 
 # super() builtin returns a proxy object (temporary instance of superclass)
@@ -62,3 +63,7 @@ print(out)
 # Ideally, on every training loop, you should zero out gradients so that you do paramter update correctly
 net.zero_grad()
 out.backward(torch.randn(1, 10))
+
+# create optimizer
+optimizer = optim.SGD(net.parameters(), lr=0.01)
+
