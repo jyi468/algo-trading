@@ -12,6 +12,7 @@ pandas = "*"
 backtrader = {extras = ["plotting"],version = "*"}
 scipy = "*"
 torch = "*"
+torchvision = "*"
 requests = "*"
 ibpy2 = {file = "https://github.com/blampe/IbPy/archive/master.zip"}
 tox = "*"
