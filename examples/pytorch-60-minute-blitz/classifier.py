@@ -7,24 +7,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-# If running on Windows and you get a BrokenPipeError, try setting
-# the num_worker of torch.utils.data.DataLoader() to 0.
-
-train = False
-
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-)
-
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=0)
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=0)
-
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 def imshow(img):
     img = img / 2 + 0.5  # unnormalize
     npimg = img.numpy()
@@ -51,10 +33,28 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x
 
+
+is_train = False
 PATH = './cifar_net.pth'
-net = Net()
-# get random training images
-if train:
+
+# If running on Windows and you get a BrokenPipeError, try setting
+# the num_worker of torch.utils.data.DataLoader() to 0.
+
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+)
+
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=0)
+
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=0)
+
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+if is_train:
+    # get random training images
     dataiter = iter(trainloader)
     images, labels = dataiter.next()
 
@@ -62,6 +62,10 @@ if train:
     # imshow(torchvision.utils.make_grid(images))
     # print labels
     # print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+
+
+    net = Net()
+
     # Loss function and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
@@ -85,7 +89,7 @@ if train:
 
             # print statistics
             running_loss += loss.item()
-            if i % 2000 == 1999:  # print every 2000 mini-batches
+            if i % 2000 == 1999: # print every 2000 mini-batches
                 print('[%d, %5d] loss: %.3f' %
                       (epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
@@ -99,22 +103,45 @@ else:
     # print images
     # imshow(torchvision.utils.make_grid(images))
     # print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
-    # net.load_state_dict(torch.load(PATH))
-    # # outputs are energies for 10 classes. Higher the energy for a class, the more the NN thinks that image is of
-    # # particular class. Get index of higest energy
-    # outputs = net(images)
-    # _, predicted = torch.max(outputs, 1)
 
-    # Test on entire dataset
-    correct = 0
-    total = 0
+    net = Net()
+    net.load_state_dict(torch.load(PATH))
+
+    outputs = net(images)
+    # Test 4 images
+    # _, predicted = torch.max(outputs, 1)
+    #
+    # print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
+    #                               for j in range(4)))
+
+    # Test full dataset
+    # correct = 0
+    # total = 0
+    # with torch.no_grad():
+    #     for data in testloader:
+    #         images, labels = data
+    #         outputs = net(images)
+    #         _, predicted = torch.max(outputs.data, 1)
+    #         total += labels.size(0)
+    #         correct += (predicted == labels).sum().item()
+    #
+    # print('Accuracy of the network on the 10000 test images: %d %%' % (
+    #         100 * correct / total))
+
+    # Test full dataset with classes
+    class_correct = list(0. for i in range(10))
+    class_total = list(0. for i in range(10))
     with torch.no_grad():
         for data in testloader:
             images, labels = data
             outputs = net(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            for i in range(4):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
 
-    print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))
-
+    for i in range(10):
+        print('Accuracy of %5s : %2d %%' % (
+            classes[i], 100 * class_correct[i] / class_total[i]))
