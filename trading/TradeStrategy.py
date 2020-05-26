@@ -7,6 +7,7 @@ import sys  # To find out the script name (in argv[0])
 
 # Import the backtrader platform
 import backtrader as bt
+from portfolio.Optimizer import Optimizer
 
 
 # Create a Strategy
@@ -43,6 +44,7 @@ class TradeStrategy(bt.Strategy):
             self.indicators[data]['rsi'] = bt.indicators.RSI(data)
         self.sma = [bt.indicators.MovingAverageSimple(self.datas[i], period=self.params.maperiod)
                     for i in range(len(self.datas))]
+        self.optimizer = Optimizer()
 
         # Indicators for the plotting show
         # bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
@@ -102,30 +104,15 @@ class TradeStrategy(bt.Strategy):
 
             # Check if we are in the market
             if not self.position:
+                self.order = self.buy(data=data)
 
-                # Not yet ... we MIGHT BUY if ...
-                if self.dataclose[i][0] > self.indicators[data]['sma'][0]:
-
-                    # BUY, BUY, BUY!!! (with default parameters)
-                    self.log('BUY CREATE, %.2f' % self.dataclose[i][0])
-
-                    # Keep track of the created order to avoid a 2nd order
-                    self.order = self.buy(data=data)
-
-                    if self.params.use_target_percent:
-                        # Data will be calculated indicator per period
-                        # optimizer.compute_portfolio(data)
-                        self.order = self.order_target_percent()
+                if self.params.use_target_percent:
+                    # Data will be calculated indicator per period
+                    self.optimizer.compute_portfolio(data)
+                    self.order = self.order_target_percent()
 
             else:
-
-                # Already in the market ... we might sell
-                if self.dataclose[i][0] < self.indicators[data]['sma'][0]:
-                    # SELL, SELL, SELL!!! (with all possible default parameters)
-                    self.log('SELL CREATE, %.2f' % self.dataclose[i][0])
-
-                    # Keep track of the created order to avoid a 2nd order
-                    self.order = self.sell(data=data)
+                self.order = self.sell(data=data)
 
     def stop(self):
         """Strategy hook. Called when data has been exhausted and backtesting over"""
