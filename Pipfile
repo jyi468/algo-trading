@@ -16,6 +16,7 @@ torchvision = "*"
 requests = "*"
 ibpy2 = {file = "https://github.com/blampe/IbPy/archive/master.zip"}
 tox = "*"
+gym = "*"
 
 [requires]
 python_version = "3.8"
