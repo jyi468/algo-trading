@@ -14,29 +14,32 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
+
 env = gym.make('CartPole-v0').unwrapped
 
-# matplotlib
+# set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
     from IPython import display
 
 plt.ion()
 
-# If using gpu
+# if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
+Transition = namedtuple('Transition',
+                        ('state', 'action', 'next_state', 'reward'))
 
 
 class ReplayMemory(object):
+
     def __init__(self, capacity):
         self.capacity = capacity
         self.memory = []
         self.position = 0
 
     def push(self, *args):
-        """Saves a transition"""
+        """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
@@ -49,24 +52,21 @@ class ReplayMemory(object):
         return len(self.memory)
 
 
-# Q-Network
 class DQN(nn.Module):
+
     def __init__(self, h, w, outputs):
         super(DQN, self).__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
-        # Batch normalization is used to improve speed, performance and stability of NNs.
-        # Use to normalize input layer by re-centering and re-scaling
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
         self.bn2 = nn.BatchNorm2d(32)
         self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
         self.bn3 = nn.BatchNorm2d(32)
 
-        # Number of linear input connections depends on output of conv2d layers
+        # Number of Linear input connections depends on output of conv2d layers
         # and therefore the input image size, so compute it.
-        def conv2d_size_out(size, kernel_size=5, stride=2):
-            return (size - (kernel_size - 1) - 1) // stride + 1
-
+        def conv2d_size_out(size, kernel_size = 5, stride = 2):
+            return (size - (kernel_size - 1) - 1) // stride  + 1
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
         linear_input_size = convw * convh * 32
@@ -77,21 +77,20 @@ class DQN(nn.Module):
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
 
 
-# Input Extraction
 resize = T.Compose([T.ToPILImage(),
                     T.Resize(40, interpolation=Image.CUBIC),
                     T.ToTensor()])
 
 
+# Image processing and Utilities
 def get_cart_location(screen_width):
     world_width = env.x_threshold * 2
     scale = screen_width / world_width
-    return int(env.state[0] * scale + screen_width / 2.0)  # Middle of cart
-
+    return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
 
 def get_screen():
     # Returned screen requested by gym is 400x600x3, but is sometimes larger
@@ -99,7 +98,7 @@ def get_screen():
     screen = env.render(mode='rgb_array').transpose((2, 0, 1))
     # Cart is in the lower half, so strip off the top and bottom of the screen
     _, screen_height, screen_width = screen.shape
-    screen = screen[:, int(screen_height * 0.4):int(screen_height * 0.8)]
+    screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
     view_width = int(screen_width * 0.6)
     cart_location = get_cart_location(screen_width)
     if cart_location < view_width // 2:
@@ -121,13 +120,12 @@ def get_screen():
 
 env.reset()
 plt.figure()
-plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation='none')
+plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(),
+           interpolation='none')
 plt.title('Example extracted screen')
 plt.show()
 
-
-# Hyperparameters and Utilities
-# Init model and optimizer
+# Initialize Model and Optimizer
 BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 0.9
@@ -159,7 +157,8 @@ steps_done = 0
 def select_action(state):
     global steps_done
     sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps_done / EPS_DECAY)
+    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+        math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
@@ -194,7 +193,7 @@ def plot_durations():
         display.display(plt.gcf())
 
 
-# Single optimization step for training
+# Single Model optimization step
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
@@ -207,9 +206,9 @@ def optimize_model():
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
+                                            batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
-                                                if s is not None])
+                                       if s is not None])
     state_batch = torch.cat(batch.state)
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
@@ -240,8 +239,8 @@ def optimize_model():
     optimizer.step()
 
 
-# Training loop
-num_episodes = 50
+# Q-Learning Training Loop
+num_episodes = 300
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
