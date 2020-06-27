@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 import datetime  # For datetime objects
 import os.path  # To manage paths
 import sys  # To find out the script name (in argv[0])
+import numpy as np
 
 # Import the backtrader platform
 import backtrader as bt
@@ -55,6 +56,7 @@ class TradeStrategy(bt.Strategy):
         # bt.indicators.SmoothedMovingAverage(rsi, period=10)
         # bt.indicators.ATR(self.datas[0]).plot = False
 
+
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
             # Buy/Sell order submitted/accepted to/by broker - Nothing to do
@@ -89,30 +91,14 @@ class TradeStrategy(bt.Strategy):
         if not trade.isclosed:
             return
 
-        self.log('OPERATION PROFIT, GROSS %.2f, NET %.2f' %
-                 (trade.pnl, trade.pnlcomm))
-
     def next(self):
-        # TODO: Refactor to conform to Optimizer API
         for i, data in enumerate(self.datas):
-            # Simply log the closing price of the series from the reference
-            self.log('Close, %.2f' % self.dataclose[i][0])
+            self.optimizer.compute_portfolio(self.get_state(self.indicators[data]))
+            self.order = self.order_target_percent()
 
-            # Check if an order is pending ... if yes, we cannot send a 2nd one
-            if self.order:
-                return
-
-            # Check if we are in the market
-            if not self.position:
-                self.order = self.buy(data=data)
-
-                if self.params.use_target_percent:
-                    # Data will be calculated indicator per period
-                    self.optimizer.compute_portfolio(data)
-                    self.order = self.order_target_percent()
-
-            else:
-                self.order = self.sell(data=data)
+    def get_state(self, indicators):
+        state = np.stack([indicators[key][0] for key in indicators.keys()])
+        return state
 
     def stop(self):
         """Strategy hook. Called when data has been exhausted and backtesting over"""
